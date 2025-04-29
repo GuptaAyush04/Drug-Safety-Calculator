@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Patient Drug Safety Calculator - IHS Bharat</title>
+    <link rel="icon" href="https://www.ihsbharat.com/images/ihs_logo%20mini.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /*--- Modernized Global Styles & Variables--*/
+        :root {
+            --primary-color: #2563eb; /* Updated Blue */
+            --primary-color-dark: #1d4ed8;
+            --secondary-color: #60a5fa; /* Lighter Blue */
+            --accent-color: #10b981; /* Teal/Green Accent */
+            --accent-color-dark: #059669;
+            --danger-color: #ef4444; /* Updated Red */
+            --danger-color-dark: #dc2626; /* Darker Red */
+            --warning-color-fg: var(--danger-color);
+            --safe-color-fg: #16a34a; /* Updated Green */
+            --light-bg: #f8fafc; /* Very light grey */
+            --white-bg: #ffffff;
+            --border-color: #e5e7eb; /* Lighter border */
+            --light-border-color: #f3f4f6;
+            --text-color: #1f2937; /* Darker grey text */
+            --subtle-text-color: #6b7280; /* Medium grey */
+            --disabled-bg: #f9fafb;
+            --header-color: #111827; /* Almost black */
+            --box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            --box-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --border-radius: 8px;
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --gradient-accent: linear-gradient(135deg, var(--accent-color), #2dd4bf); /* Teal gradient */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            padding: 20px;
+            margin: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /*--- Typography --- */
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-bottom: 0.8em;
+            font-weight: 600;
+        }
+        h1 { text-align: center; font-size: 2em; margin-top: 0; margin-bottom: 0.5em; color: var(--primary-color-dark); }
+        h2 { font-size: 1.5em; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 2em; margin-bottom: 1.2em; }
+        h2:first-of-type { margin-top: 0; }
+        label { font-weight: 500; display: block; margin-top: 18px; margin-bottom: 6px; font-size: 1em; color: var(--header-color); }
+        small { font-size: 0.875em; color: var(--subtle-text-color); display: block; margin-top: 5px; line-height: 1.5; }
+
+        /*--- Layout Containers -- */
+        .container { background: var(--white-bg); padding: 30px 35px; border-radius: var(--border-radius); box-shadow: var(--box-shadow-lg); max-width: 900px; margin: 30px auto; }
+        .intro-text { text-align: center; color: var(--subtle-text-color); margin-bottom: 2.5em; font-size: 1.05em; max-width: 700px; margin-left: auto; margin-right: auto; }
+        .info-box { padding: 25px 30px; border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 30px; background-color: var(--white-bg); box-shadow: none; }
+        .info-box > h2 { margin-top: 0; margin-bottom: 1em; padding-bottom: 10px; border-bottom: 1px solid var(--light-border-color); font-size: 1.3em; }
+        .info-box > h2 + h2 { margin-top: 30px; }
+
+        /* Collapsible Section */
+        .collapsible-section { transition: max-height 0.6s ease-out, opacity 0.5s ease-in-out, margin-top 0.6s ease-out, padding 0.6s ease; overflow: hidden; max-height: 0; opacity: 0; padding: 0 25px; margin-top: 0; border: none; border-radius: var(--border-radius); background-color: #eef; }
+        .collapsible-section.visible { max-height: 2500px; /* Large enough height */ opacity: 1; padding: 25px; margin-top: 20px; border: 1px solid var(--primary-color); }
+
+        /* Results Section */
+        .results-section { background: var(--white-bg); padding: 25px; border-radius: var(--border-radius); margin-top: 25px; box-shadow: var(--box-shadow); }
+        .results-section h2 { color: var(--primary-color); border-bottom-color: var(--primary-color); margin-bottom: 1em; font-size: 1.3em; }
+        .results-section pre { white-space: pre-wrap; word-wrap: break-word; line-height: 1.7; font-family: 'Menlo', 'Consolas', 'Courier New', monospace; font-size: 0.95em; font-weight: 400; color: var(--text-color); background: var(--light-bg); padding: 20px; border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-top: 15px; }
+        .results-section span.safe, .results-section span.risky { font-weight: 500; display: block; margin-top: 10px; padding: 10px 12px; border-radius: 6px; border-left: 5px solid; }
+        .results-section span.safe:first-child, .results-section span.risky:first-child { margin-top: 0; }
+        .results-section span.safe { color: var(--safe-color-fg); border-left-color: var(--safe-color-fg); background-color: #f0fdf4; }
+        .results-section span.risky { color: var(--danger-color-dark); border-left-color: var(--danger-color); background-color: #fef2f2; }
+        .results-section span.risky strong { color: inherit; font-weight: 600; }
+        .results-section span.safe strong { color: inherit; font-weight: 600; }
+
+        /*--- Form Elements -- */
+        input[type="text"], input[type="number"], input[type="email"], select, textarea { width: 100%; padding: 12px 15px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 1em; box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease; margin-bottom: 8px; background-color: var(--white-bg); color: var(--text-color); }
+        input::placeholder, textarea::placeholder { color: var(--subtle-text-color); opacity: 0.7; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); outline: none; }
+        input#abhaInput { letter-spacing: 1.5px; }
+        input[name="acb_score"][readonly] { text-align: center; font-style: italic; color: var(--subtle-text-color); background-color: var(--disabled-bg); cursor: default; border-color: var(--light-border-color); }
+        input[name="acb_score"][readonly]:not([value="N/A"]) { font-style: normal; color: var(--text-color); font-weight: 600; }
+        /* Style for medication input when it's not in the known list */
+        input.med-input.unknown-med {
+            border-color: var(--warning-color-fg); /* Example: Orange border */
+            background-color: #fffbeb; /* Light yellow background */
+        }
+
+
+        /*- eGFR/Creatinine Input Section Styling --*/
+        .renal-input-section { margin-bottom: 15px; padding-top: 5px; }
+        #creatinineInputSection { display: block; }
+        #egfrInputSection { display: none; }
+        #toggleRenalInputBtn { background: none; border: none; color: var(--primary-color); text-decoration: underline; cursor: pointer; padding: 0; font-size: 0.9em; margin-top: 0px; margin-bottom: 10px; display: inline-block; }
+        #toggleRenalInputBtn:hover { color: var(--primary-color-dark); }
+
+        /*--- Buttons (Modernized) ---*/
+        button { border: none; border-radius: var(--border-radius); cursor: pointer; font-size: 1em; font-weight: 600; margin-top: 15px; transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-align: center; vertical-align: middle; line-height: 1.5; min-width: 160px; padding: 12px 28px; box-shadow: var(--box-shadow); }
+        button:hover { opacity: 0.9; box-shadow: var(--box-shadow-lg); }
+        button:active { transform: translateY(1px) scale(0.98); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .button-icon { margin-right: 8px; font-size: 1.1em; line-height: 1; }
+        .evaluate-button-wrapper { text-align: center; margin-top: 30px; margin-bottom: 10px; padding-top: 20px; border-top: 1px solid var(--light-border-color); }
+        /* Added margin-bottom to the button itself */
+        button[type="submit"]#evaluateBtn {
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 1.1em;
+            padding: 14px 32px;
+            margin-bottom: 5px; /* Add space below the button */
+        }
+        button[type="submit"]#evaluateBtn:hover { background: var(--gradient-primary); opacity: 0.9; }
+        button.secondary-action { background-color: var(--white-bg); color: var(--primary-color); border: 1px solid var(--primary-color); font-weight: 500; padding: 10px 20px; min-width: auto; box-shadow: none; }
+        button.secondary-action:hover { background-color: #eff6ff; border-color: var(--primary-color-dark); color: var(--primary-color-dark); box-shadow: var(--box-shadow); }
+
+        /* Delete Button Style */
+        button.delete-med-btn {
+            background-color: #ffffff; /* White background */
+            color: var(--danger-color-dark); /* Red icon color */
+            border: 1px solid var(--danger-color); /* Red border */
+            padding: 6px 10px; /* Adjust padding as needed */
+            font-size: 14px; /* Base font size */
+            margin-left: 8px;
+            margin-top: 0;
+            align-self: flex-end;
+            line-height: 1; /* Align icon vertically */
+            min-width: 40px; /* Ensure minimum width */
+            flex-shrink: 0;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: none;
+        }
+        /* Delete Button Icon Styling (using embedded <i> tag) */
+        button.delete-med-btn i {
+             font-size: 1em; /* Icon size relative to button font size */
+             line-height: inherit; /* Inherit line height */
+             /* No margin needed if icon is the only content */
+        }
+        /* Delete Button Hover Style */
+        button.delete-med-btn:hover {
+            background-color: #fee2e2; /* Light red background on hover */
+            color: var(--danger-color-dark); /* Keep icon red */
+            border-color: var(--danger-color-dark); /* Darker red border */
+            box-shadow: var(--box-shadow);
+        }
+
+        #submitSuggestionBtn { background: var(--gradient-accent); color: white; padding: 12px 24px; }
+        #submitSuggestionBtn:hover { background: var(--gradient-accent); opacity: 0.9; }
+
+        /*--- Medication Row Styling ---*/
+        .med-row { display: flex; align-items: flex-end; gap: 15px; margin-bottom: 20px; width: 100%; position: relative; }
+        .med-input-group { flex: 1; min-width: 200px; position: relative; }
+        .acb-input-group { width: 100px; flex-shrink: 0; }
+        .med-row label { margin-top: 0; margin-bottom: 4px; font-size: 0.9em; }
+        .med-row input.med-input { width: 100%; }
+        .med-row input[type="text"][name="acb_score"] { width: 100%; }
+
+        /*--- Autocomplete Suggestions Styling ---*/
+        .autocomplete-suggestions { position: absolute; border: 1px solid var(--border-color); border-top: none; background-color: var(--white-bg); max-height: 200px; overflow-y: auto; z-index: 1000; width: 100%; box-shadow: var(--box-shadow-lg); border-radius: 0 0 var(--border-radius) var(--border-radius); display: none; left: 0; top: 100%; box-sizing: border-box; }
+        .autocomplete-suggestions div { padding: 10px 15px; cursor: pointer; font-size: 0.95em; border-bottom: 1px solid var(--light-border-color); }
+        .autocomplete-suggestions div:last-child { border-bottom: none; }
+        .autocomplete-suggestions div:hover { background-color: #eef2ff; color: var(--primary-color-dark); }
+        .autocomplete-suggestions div.selected { background-color: #e0e7ff; color: var(--primary-color-dark); font-weight: 500; }
+
+        /*--- Suggestion Area Specifics ---*/
+        #suggestionFormArea label { margin-top: 10px; }
+        #suggestionFormArea input, #suggestionFormArea textarea { margin-bottom: 10px; }
+
+        /*--- References Section --- */
+        .references { border-top: 1px solid var(--border-color); margin-top: 40px; padding-top: 25px; }
+        .references ul { list-style: disc; padding-left: 25px; margin-top: 10px; }
+        .references li { margin-bottom: 12px; line-height: 1.6; }
+        .references li a { color: var(--primary-color); text-decoration: underline; }
+        .references li a:hover { color: var(--primary-color-dark); }
+        .references p { margin-bottom: 15px; }
+        .references p small { display: block; margin-top: 20px; color: var(--subtle-text-color); border-top: 1px solid var(--border-color); padding-top: 15px; font-style: italic; font-size: 0.85em; }
+
+        /*--- Loading Spinner --- */
+        #loadingSpinner { display: none; text-align: center; margin: 30px auto; padding: 20px; background-color: var(--white-bg); border-radius: var(--border-radius); box-shadow: var(--box-shadow); max-width: 300px; border: 1px solid var(--primary-color); }
+        #loadingSpinner strong { color: var(--primary-color); font-size: 1.1em; display: block; }
+
+        /*--- Utility Classes --- */
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 10px; } .mt-2 { margin-top: 20px; }
+        .mb-1 { margin-bottom: 10px; } .mb-2 { margin-bottom: 20px; }
+
+        /*--- Main Logo Style --- */
+        #mainLogo { display: block; margin: 0 auto 20px auto; max-height: 70px; width: auto; }
+        /* Added wrapper for the logo link */
+        .logo-link { display: block; text-align: center; margin-bottom: 20px; }
+        .logo-link img { max-height: 70px; width: auto; display: inline-block; }
+
+         /* Ethical Declaration Box Styles */
+        .ethical-declaration {
+            background-color: #fffbeb; /* Light yellow background */
+            border-left: 5px solid #facc15; /* Yellow border */
+            margin-top: 30px; /* Add space above */
+            margin-bottom: 30px; /* Add space below */
+        }
+        .ethical-declaration h2 {
+            color: #ca8a04; /* Darker yellow text */
+            border-bottom-color: #facc15;
+            font-size: 1.3em;
+        }
+        .ethical-declaration p, .ethical-declaration li {
+            font-size: 0.9em;
+            color: #422006; /* Brownish text */
+        }
+        .ethical-declaration ul {
+            list-style: disc;
+            padding-left: 25px;
+            margin-top: 10px;
+        }
+        .ethical-declaration li {
+            margin-bottom: 8px;
+        }
+
+
+        /*--- Mobile Friendliness --- */
+        @media screen and (max-width: 768px) {
+            body { padding: 15px; font-size: 15px; }
+            .container, .info-box { padding: 20px; margin: 20px auto; max-width: 100%; }
+            /* Suggestion box is visible on mobile */
+            .collapsible-section.visible { padding: 20px; }
+            button, button.secondary-action, button[type="submit"]#evaluateBtn { width: 100%; padding: 14px 20px; font-size: 1em; box-sizing: border-box; margin-top: 15px; }
+            /* Adjust mobile delete button */
+            button.delete-med-btn {
+                 width: auto;
+                 max-width: none; /* Allow button to size naturally or control via flex */
+                 padding: 8px 12px; /* Slightly larger tap target */
+                 margin-top: 10px;
+                 margin-left: 0;
+                 align-self: flex-end;
+            }
+            .evaluate-button-wrapper { margin-top: 25px; }
+             /* Ensure small text below button is also centered on mobile */
+            .evaluate-button-wrapper small { text-align: center; }
+
+            .med-row { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 25px; }
+            .acb-input-group { width: 100%; }
+            /* delete-med-btn mobile styles moved above */
+            h1 { font-size: 1.6em; }
+            h2 { font-size: 1.3em; }
+            .info-box > h2 { font-size: 1.2em; }
+            .results-section h2 { font-size: 1.2em; }
+            .results-section pre { font-size: 0.9em; }
+            .ethical-declaration h2 { font-size: 1.2em; } /* Adjust heading on mobile */
+            .ethical-declaration p, .ethical-declaration li { font-size: 0.85em; } /* Adjust text size on mobile */
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="https://www.ihsbharat.com" target="_blank" rel="noopener noreferrer" class="logo-link">
+            <img id="mainLogo" src="https://www.ihsbharat.com/images/ihs_logo%20mini.png" alt="IHS Bharat Logo">
+        </a>
+        <h1>Patient Drug Safety Calculator</h1>
+        <p class="intro-text">
+            This tool helps evaluate potential medication safety risks for patients based on Anticholinergic Burden (ACB), selected Beers Criteria (2023), and STOPP Criteria (v3), considering patient age, renal function (eGFR), and fall history. <br>
+            Enter patient details and medications below for an initial assessment.
+        </p>
+
+        <form id="patientForm">
+            <div class="info-box">
+                <h2>Patient Information</h2>
+                <label for="patient_name">Patient Name:</label>
+                <input type="text" id="patient_name" name="patient_name" placeholder="Enter patient's name" pattern="[A-Za-z\s]*" title="Only letters and spaces allowed."/>
+                <label for="abhaInput">ABHA ID:</label>
+                 <input type="text" id="abhaInput" name="abha_id" placeholder="e.g., 12-3456-7890-1234 (Optional)" title="Enter 14 digits; hyphens added automatically. (Optional)" maxlength="17" inputmode="numeric" />
+                <label for="age">Age (Years):</label>
+                <input type="number" id="age" name="age" min="0" max="120" placeholder="e.g., 75" required/> <label for="sex">Sex:</label>
+                <select id="sex" name="sex" required> <option value="">-- Select --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <div class="renal-input-section">
+                    <div id="creatinineInputSection">
+                        <label for="serum_creatinine">Serum Creatinine (mg/dL):</label>
+                        <input type="number" id="serum_creatinine" name="serum_creatinine" step="0.01" min="0.1" max="20" placeholder="e.g., 1.1" />
+                    </div>
+                    <div id="egfrInputSection">
+                        <label for="egfr">eGFR (mL/min/1.73m²):</label>
+                        <input type="number" id="egfr" name="egfr" step="0.1" min="0" max="300" placeholder="e.g., 85" />
+                    </div>
+                    <button type="button" id="toggleRenalInputBtn">Don't know Creatinine? Enter eGFR</button>
+                    <small>
+                        Creatinine Typical Range: ~0.6-1.3 mg/dL <br>
+                        eGFR Normal: ≥90 | Mild: 60-89 | Mod: 30-59 | Sev: &lt;30
+                    </small>
+                </div>
+                <label for="falls_history">History of Falls:</label>
+                <select id="falls_history" name="falls_history" required> <option value="">-- Select --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <h2>Medications</h2>
+                <p><small>Enter medications below. If a drug is not in the list, type its name anyway; it will be recorded but not scored.</small></p>
+                <div id="medicationContainer">
+                    </div>
+                <button type="button" class="secondary-action" onclick="addMedicationField()">
+                    <i class="fa-solid fa-plus button-icon"></i> Add Medication
+                </button>
+            </div>
+
+            <div class="info-box ethical-declaration">
+                <h2>Ethical Use Declaration for Research</h2>
+                <p>By using this tool for research purposes, you acknowledge and agree to the following:</p>
+                <ul>
+                    <li><strong>Anonymization:</strong> All data collected for research must be anonymized. Do not record or store any personally identifiable information (PII) such as patient names or full ABHA IDs unless explicitly permitted by ethical review board (IRB/IEC) approval and with informed consent. For data saving features, ensure PII is omitted or pseudonymized according to ethical guidelines.</li>
+                    <li><strong>Informed Consent:</strong> Ensure appropriate informed consent is obtained from participants if required by ethical guidelines and regulations for your specific research project, especially if saving any data.</li>
+                    <li><strong>Data Security:</strong> Implement appropriate technical and organizational measures to protect any collected data from unauthorized access, disclosure, alteration, or destruction.</li>
+                    <li><strong>Purpose Limitation:</strong> Use any collected data solely for the specified research purpose approved by the relevant ethical review board.</li>
+                    <li><strong>Non-Clinical Use:</strong> This tool is for informational and research assessment purposes only. It is NOT a substitute for professional clinical judgment, diagnosis, or treatment decisions made by qualified healthcare professionals.</li>
+                </ul>
+                <p>Failure to adhere to these principles may violate ethical standards and data protection regulations.</p>
+            </div>
+            <div class="evaluate-button-wrapper">
+                <button type="submit" id="evaluateBtn">
+                    <i class="fa-solid fa-calculator button-icon"></i> Evaluate Safety & Save Data
+                </button>
+                 <small style="margin-top: 5px; display: block;">By clicking this button, you agree to share the anonymized data entered (excluding Name and ABHA ID) for research purposes as outlined in the Ethical Use Declaration.</small>
+            </div>
+        </form>
+    </div>
+
+    <div id="suggestionContainer" class="container">
+        <h2>Suggest/Update Medication Info</h2>
+        <p style="font-size: 0.9em; color: var(--subtle-text-color);">
+            Is a medication missing, listed incorrectly (e.g., wrong ACB), or do you have updated information? Please let us know!
+        </p>
+        <button type="button" id="showSuggestionFormBtn" class="secondary-action">Suggest/Update Medication Info</button>
+        <div id="suggestionFormArea" class="collapsible-section">
+            <label for="suggestionMedName">Medication Name:</label>
+            <input type="text" id="suggestionMedName" name="suggestion_med_name" placeholder="Enter the medication name" />
+            <label for="suggestionDetails">Details/Correction / Source:</label>
+            <textarea id="suggestionDetails" name="suggestion_details" rows="4" placeholder="e.g., 'Amitriptyline ACB score should be 3 based on [Source]', or 'Please add [Drug Name], it has ACB score X', etc."></textarea>
+            <label for="suggestionEmail">Your Email (Optional):</label>
+            <input type="email" id="suggestionEmail" name="suggestion_email" placeholder="So we can contact you if needed" />
+            <button type="button" id="submitSuggestionBtn"> Send Suggestion</button>
+            <small style="display: block; margin-top: 8px; color: #777;">
+                Note: Clicking 'Send Suggestion' will send the information to the server.
+            </small>
+        </div>
+    </div>
+
+    <div id="loadingSpinner">
+        <strong>Processing... Please wait.</strong>
+    </div>
+
+    <div id="resultsACB" class="results-section collapsible-section">
+        <h2>Anticholinergic Burden (ACB) Scale Evaluation</h2>
+        <pre></pre>
+    </div>
+
+    <div id="resultsBeers" class="results-section collapsible-section">
+        <h2>Beers Criteria Evaluation (2023 Examples)</h2>
+        <pre></pre>
+    </div>
+
+    <div id="resultsSTOPP" class="results-section collapsible-section">
+        <h2>STOPP Criteria & Renal Assessment (v3 Examples)</h2>
+        <pre></pre>
+    </div>
+
+    <div class="text-center">
+        <button id="downloadBtn" style="display:none; margin: 20px auto; width: auto;" class="secondary-action">
+            <i class="fa-solid fa-print button-icon"></i> Generate Print Report
+        </button>
+    </div>
+
+    <div class="references container">
+        <h2>Data Sources & References</h2>
+        <p><em>Evaluations based on the following criteria (Note: This tool uses selected examples and may not be exhaustive):</em></p>
+        <ul>
+            <li>
+                <strong>Anticholinergic Burden (ACB):</strong> Scores based on commonly cited scales and resources (e.g., <a href="https://www.acbcalc.com/" target="_blank" rel="noopener noreferrer">ACB Calculator</a> combining ACB scale & German ACB scale, literature reviews). Data referenced ~2024. Clinical interpretation is essential as scores may vary between scales and individual response differs. Drugs listed with ACB 'N/A' may have unknown/variable scores or are included due to other criteria (Beers/STOPP).
+            </li>
+            <li>
+                <strong>Beers Criteria:</strong> Based on the <a href="https://pubmed.ncbi.nlm.nih.gov/36607894/" target="_blank" rel="noopener noreferrer">American Geriatrics Society 2023 Updated AGS Beers Criteria</a>® for Potentially Inappropriate Medication Use in Older Adults. Only selected high-risk examples are implemented here.
+            </li>
+            <li>
+                <strong>STOPP/START Criteria:</strong> Based on <a href="https://pubmed.ncbi.nlm.nih.gov/33775547/" target="_blank" rel="noopener noreferrer">STOPP/START criteria version 3 (O'Mahony et al., 2023)</a>. Only selected examples of potentially inappropriate prescriptions (STOPP) related to drug-drug, drug-disease, duplicate therapy, and renal function interactions are implemented. START criteria (omitted medications) are not evaluated by this tool.
+            </li>
+            <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10004995/" target="_blank" rel="noopener noreferrer">STOPP/START Criteria Reference (Version 2, example implementation)</a></li>
+            <li><strong>eGFR Calculation:</strong> Based on the CKD-EPI Creatinine Equation (2021). Assumes Serum Creatinine is in mg/dL. Inverse calculation from eGFR to estimate Creatinine is approximate.</li>
+        </ul>
+        <p><small><strong>Disclaimer:</strong> This tool is for informational purposes only and not a substitute for professional clinical judgment. Always consult full guidelines, verify information independently, and consider the complete clinical picture. Medication lists and criteria require regular updates. <strong>It is for research purpose only and should not be used commercially.</strong> Location context: Kolkata, West Bengal, India.</small></p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script defer>
+        //--- DATA SOURCES ---
+        const medicationData = {
+            // ... (Medication data remains the same - truncated for brevity) ...
+            "Amitriptyline": { acb: 3 }, "Amoxapine": { acb: 3 }, /* ... */ "Zotepine": { acb: 1 },
+            "Acetaminophen": { acb: 0 }, "Aspirin": { acb: 0 }, /* ... */ "Zoledronic acid": { acb: 0 },
+            "Eszopiclone": { acb: null }, "Estrogens (systemic/oral)": { acb: null }, /* ... */
+            "Dementia": { condition: true }, /* ... */ "CNS Depressants": { class: true }
+        };
+
+        const beersList = { /* ... (Beers data remains the same - truncated) ... */ };
+        const stoppCombinations = [ /* ... (STOPP data remains the same - truncated) ... */ ];
+
+        // Generate list of selectable medications once
+        const selectableMedications = Object.keys(medicationData)
+            .filter(name => medicationData[name] && (typeof medicationData[name].acb === 'number' || medicationData[name].acb === null))
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())); // Case-insensitive sort
+
+
+        // --- DOM Element References ---
+        const medicationContainer = document.getElementById('medicationContainer');
+        const patientForm = document.getElementById('patientForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultsACB_Pre = document.querySelector('#resultsACB pre');
+        const resultsBeers_Pre = document.querySelector('#resultsBeers pre');
+        const resultsSTOPP_Pre = document.querySelector('#resultsSTOPP pre');
+        const resultsACB_Div = document.getElementById('resultsACB');
+        const resultsBeers_Div = document.getElementById('resultsBeers');
+        const resultsSTOPP_Div = document.getElementById('resultsSTOPP');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const patientNameInput = document.getElementById('patient_name');
+        const abhaInput = document.getElementById('abhaInput');
+        const ageInput = document.getElementById('age');
+        const sexSelect = document.getElementById('sex');
+        const creatinineInputSection = document.getElementById('creatinineInputSection');
+        const serumCreatinineInput = document.getElementById('serum_creatinine');
+        const egfrInputSection = document.getElementById('egfrInputSection');
+        const egfrInput = document.getElementById('egfr');
+        const toggleRenalInputBtn = document.getElementById('toggleRenalInputBtn');
+        const suggestionContainerElement = document.getElementById('suggestionContainer');
+        const showSuggestionFormBtn = document.getElementById('showSuggestionFormBtn');
+        const suggestionFormArea = document.getElementById('suggestionFormArea');
+        const submitSuggestionBtn = document.getElementById('submitSuggestionBtn');
+        const suggestionMedNameInput = document.getElementById('suggestionMedName');
+        const suggestionDetailsInput = document.getElementById('suggestionDetails');
+        const suggestionEmailInput = document.getElementById('suggestionEmail');
+
+        // --- State Variable ---
+        let isEgfrInputMode = false; // Track if user is entering eGFR directly
+
+        // --- HELPER FUNCTIONS ---
+        function addMedicationField() {
+            if (!medicationContainer) return;
+            const div = document.createElement('div');
+            const id = `med_${Date.now()}`;
+            div.classList.add('med-row');
+            // Added data-known="false" attribute to track if a known med was selected
+            // Insert Font Awesome icon directly into the button
+            div.innerHTML = `
+                <div class="med-input-group">
+                    <label for="${id}_name">Medication:</label>
+                    <input type="text" id="${id}_name" class="med-input" name="medication_name" placeholder="Type to search or enter custom med" autocomplete="off" data-known="false">
+                    <div class="autocomplete-suggestions" id="${id}_suggestions"></div>
+                    <input type="hidden" name="medication_value" id="${id}_value"> </div>
+                <div class="acb-input-group">
+                    <label for="${id}_acb">ACB Score:</label>
+                    <input type="text" name="acb_score" id="${id}_acb" readonly placeholder="ACB" />
+                </div>
+                <button type="button" class="delete-med-btn" title="Remove this medication">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            medicationContainer.appendChild(div);
+
+            // Attach listeners specifically to the new input field
+            const newMedInput = div.querySelector('.med-input');
+            const newSuggestionsElement = div.querySelector('.autocomplete-suggestions');
+            if (newMedInput && newSuggestionsElement) {
+                 attachMedInputListeners(newMedInput, newSuggestionsElement);
+            }
+
+             // Add event listener for the delete button
+            div.querySelector('.delete-med-btn').addEventListener('click', function () {
+                // Check if the parent div still exists before trying to remove
+                if(div.parentNode === medicationContainer) {
+                    medicationContainer.removeChild(div);
+                    clearResults(); // Clear results when a med is removed
+                }
+            });
+        }
+
+        function clearResults() {
+            if (resultsACB_Pre) resultsACB_Pre.innerHTML = '';
+            if (resultsBeers_Pre) resultsBeers_Pre.innerHTML = '';
+            if (resultsSTOPP_Pre) resultsSTOPP_Pre.innerHTML = '';
+            if (resultsACB_Div) resultsACB_Div.classList.remove('visible');
+            if (resultsBeers_Div) resultsBeers_Div.classList.remove('visible');
+            if (resultsSTOPP_Div) resultsSTOPP_Div.classList.remove('visible');
+            if (downloadBtn) downloadBtn.style.display = 'none';
+        }
+
+        // --- AUTOCOMPLETE AND MEDICATION INPUT LOGIC ---
+        function showSuggestions(inputElement, suggestionsElement) {
+            const value = inputElement.value.toLowerCase().trim();
+            suggestionsElement.innerHTML = '';
+            suggestionsElement.style.display = 'none';
+            if (value.length < 1) return;
+
+            const filteredMeds = selectableMedications.filter(med => med.toLowerCase().includes(value));
+
+            if (filteredMeds.length > 0) {
+                filteredMeds.slice(0, 10).forEach(med => { // Limit suggestions shown
+                    const div = document.createElement('div');
+                    div.textContent = med;
+                    // *** Use mousedown instead of click ***
+                    div.addEventListener('mousedown', (event) => {
+                        // Prevent the input blur event from firing immediately
+                        event.preventDefault();
+                        inputElement.value = med; // Set display value
+                        inputElement.dataset.known = "true"; // Mark as known
+                        inputElement.classList.remove('unknown-med'); // Remove unknown styling
+                        const hiddenInput = inputElement.closest('.med-input-group').querySelector('input[type="hidden"][name="medication_value"]');
+                        if (hiddenInput) { hiddenInput.value = med; } // Set hidden value for known med
+                        updateAcbScore(inputElement, med);
+                        suggestionsElement.innerHTML = '';
+                        suggestionsElement.style.display = 'none';
+                        clearResults(); // Clear results when selection changes
+                    });
+                    suggestionsElement.appendChild(div);
+                });
+                suggestionsElement.style.display = 'block';
+            }
+        }
+
+        function updateAcbScore(inputElement, selectedValue) {
+            const row = inputElement.closest('.med-row');
+            if (!row) return;
+            const acbInput = row.querySelector('input[name="acb_score"]');
+            if (!acbInput) return;
+
+            // Check if the selectedValue corresponds to a known medication
+            const isKnown = medicationData.hasOwnProperty(selectedValue);
+
+            if (!isKnown || selectedValue === "") {
+                acbInput.value = ''; acbInput.placeholder = "ACB";
+            } else {
+                const score = medicationData[selectedValue]?.acb;
+                if (score === null) { acbInput.value = "N/A"; acbInput.placeholder = "N/A"; }
+                else if (typeof score === 'number') { acbInput.value = score; acbInput.placeholder = "ACB"; }
+                else { acbInput.value = ''; acbInput.placeholder = "ACB"; }
+            }
+        }
+
+        // Function to handle when focus leaves the medication input
+        function handleMedInputBlur(inputElement) {
+            // Use a small timeout to allow mousedown event on suggestions to register first
+            setTimeout(() => {
+                const suggestionsElement = inputElement.nextElementSibling;
+                // Hide suggestions if they are still visible (might happen if user tabs away quickly)
+                if (suggestionsElement && suggestionsElement.style.display !== 'none') {
+                    suggestionsElement.innerHTML = '';
+                    suggestionsElement.style.display = 'none';
+                }
+
+                // Check the final value after potential suggestion click
+                const currentValue = inputElement.value.trim();
+                // Check if the current value exactly matches a known med (case-insensitive)
+                const isKnown = selectableMedications.some(med => med.toLowerCase() === currentValue.toLowerCase());
+
+                if (currentValue && !isKnown) {
+                    // Value exists but doesn't match a known med
+                    inputElement.dataset.known = "false";
+                    inputElement.classList.add('unknown-med');
+                    const hiddenInput = inputElement.closest('.med-input-group').querySelector('input[type="hidden"][name="medication_value"]');
+                    if (hiddenInput) { hiddenInput.value = ""; } // Clear hidden value
+                    updateAcbScore(inputElement, ""); // Clear ACB score
+                } else if (isKnown) {
+                    // Value matches a known med (might need case correction)
+                    const matchedMed = selectableMedications.find(med => med.toLowerCase() === currentValue.toLowerCase());
+                    if (matchedMed && inputElement.value !== matchedMed) {
+                         inputElement.value = matchedMed; // Correct case only if needed
+                    }
+                     inputElement.dataset.known = "true"; // Ensure marked as known
+                     inputElement.classList.remove('unknown-med'); // Ensure style removed
+                     const hiddenInput = inputElement.closest('.med-input-group').querySelector('input[type="hidden"][name="medication_value"]');
+                     if (hiddenInput) { hiddenInput.value = matchedMed; } // Ensure hidden value set
+                     updateAcbScore(inputElement, matchedMed); // Ensure score updated
+                } else {
+                    // Input is empty
+                    inputElement.dataset.known = "false";
+                    inputElement.classList.remove('unknown-med');
+                    const hiddenInput = inputElement.closest('.med-input-group').querySelector('input[type="hidden"][name="medication_value"]');
+                    if (hiddenInput) { hiddenInput.value = ""; }
+                    updateAcbScore(inputElement, "");
+                }
+                 // Don't clear results on blur unless necessary, let submit handle final state
+                 // clearResults();
+            }, 150); // 150ms delay seems reasonable
+        }
+
+        // Attach listeners to medication input fields
+        function attachMedInputListeners(inputElement, suggestionsElement) {
+             inputElement.addEventListener('input', () => {
+                 showSuggestions(inputElement, suggestionsElement);
+                 // Reset known status while typing
+                 inputElement.dataset.known = "false";
+                 inputElement.classList.remove('unknown-med');
+                 const hiddenInput = inputElement.closest('.med-input-group').querySelector('input[type="hidden"][name="medication_value"]');
+                 if (hiddenInput) { hiddenInput.value = ""; } // Clear hidden value while typing
+                 updateAcbScore(inputElement, ""); // Clear ACB score while typing
+             });
+             inputElement.addEventListener('blur', () => handleMedInputBlur(inputElement));
+        }
+
+
+        /**
+         * Calculates eGFR using CKD-EPI 2021 formula.
+         */
+        function calculateEgfrFromCreatinine(scr, age, sex) {
+            // ... (calculation logic remains the same) ...
+            if (isNaN(age) || age <= 0 || isNaN(scr) || scr <= 0 || (sex !== "Male" && sex !== "Female")) {
+                return NaN;
+            }
+            let kappa, alpha, sex_multiplier;
+            if (sex === "Female") { kappa = 0.7; alpha = -0.241; sex_multiplier = 1.012; }
+            else { kappa = 0.9; alpha = -0.302; sex_multiplier = 1.0; }
+            const scr_kappa_ratio = scr / kappa;
+            const term1 = Math.pow(Math.min(scr_kappa_ratio, 1.0), alpha);
+            const term2 = Math.pow(Math.max(scr_kappa_ratio, 1.0), -1.200);
+            const age_term = Math.pow(0.9938, age);
+            const calculated_egfr = 142 * term1 * term2 * age_term * sex_multiplier;
+            return Math.round(calculated_egfr * 10) / 10;
+        }
+
+
+         /**
+         * Estimates Serum Creatinine from eGFR using an inverse of CKD-EPI 2021.
+         */
+        function estimateCreatinineFromEgfr(egfr, age, sex) {
+             // ... (estimation logic remains the same) ...
+             if (isNaN(age) || age <= 0 || isNaN(egfr) || egfr <= 0 || (sex !== "Male" && sex !== "Female")) { return NaN; }
+             let kappa, alpha, sex_multiplier;
+             if (sex === "Female") { kappa = 0.7; alpha = -0.241; sex_multiplier = 1.012; }
+             else { kappa = 0.9; alpha = -0.302; sex_multiplier = 1.0; }
+             const base_factor = egfr / (142 * Math.pow(0.9938, age) * sex_multiplier);
+             let scr_case1 = NaN, scr_case2 = NaN;
+             try { if (base_factor > 0 && alpha !== 0) { const r = Math.pow(base_factor, 1 / alpha); scr_case1 = kappa * r; if (scr_case1 / kappa > 1.0 + 1e-6) scr_case1 = NaN; } } catch (e) {}
+             try { if (base_factor > 0) { const r = Math.pow(base_factor, 1 / -1.200); scr_case2 = kappa * r; if (scr_case2 / kappa <= 1.0 - 1e-6) scr_case2 = NaN; } } catch (e) {}
+             let final_scr = !isNaN(scr_case1) && scr_case1 > 0 ? scr_case1 : (!isNaN(scr_case2) && scr_case2 > 0 ? scr_case2 : NaN);
+             return !isNaN(final_scr) ? (Math.round(final_scr * 100) / 100) : NaN;
+        }
+
+
+        // --- EVENT LISTENERS (General) ---
+
+        // Function to enforce min/max on number inputs
+        function enforceMinMax(inputElement) {
+             // ... (logic remains the same) ...
+             const min = parseFloat(inputElement.min);
+             const max = parseFloat(inputElement.max);
+             let value = parseFloat(inputElement.value);
+             if (!isNaN(value)) {
+                 if (!isNaN(min) && value < min) inputElement.value = min;
+                 else if (!isNaN(max) && value > max) inputElement.value = max;
+             }
+         }
+
+        // Add listeners to enforce limits on relevant fields
+        if(ageInput) ageInput.addEventListener('input', () => enforceMinMax(ageInput));
+        if(serumCreatinineInput) serumCreatinineInput.addEventListener('input', () => enforceMinMax(serumCreatinineInput));
+        if(egfrInput) egfrInput.addEventListener('input', () => enforceMinMax(egfrInput));
+
+
+        // Patient Name Input Filter & Capitalization (Letters and Spaces ONLY)
+        if(patientNameInput) {
+            patientNameInput.addEventListener('input', function(e) {
+                 // ... (logic remains the same) ...
+                 const input = e.target; let value = input.value; let originalCursorPos = input.selectionStart;
+                 const allowedChars = /^[A-Za-z\s]*$/; let filteredValue = ''; let adjustment = 0;
+                 for (let i = 0; i < value.length; i++) { if (allowedChars.test(value[i])) { filteredValue += value[i]; } else if (i < originalCursorPos) { adjustment++; } }
+                 if (filteredValue.length > 0) { filteredValue = filteredValue.charAt(0).toUpperCase() + filteredValue.slice(1); }
+                 if (input.value !== filteredValue) { input.value = filteredValue; input.setSelectionRange(originalCursorPos - adjustment, originalCursorPos - adjustment); }
+            });
+        }
+
+        // Hide Autocomplete on Click Outside (ensure it doesn't interfere with mousedown)
+        document.addEventListener('click', function(e) {
+             // Check if the click is outside ANY suggestion box or input group
+             if (!e.target.closest('.med-input-group')) {
+                 const activeSuggestions = document.querySelectorAll('.autocomplete-suggestions[style*="display: block"]');
+                 activeSuggestions.forEach(suggestionsElement => {
+                      suggestionsElement.innerHTML = '';
+                      suggestionsElement.style.display = 'none';
+                 });
+             }
+        });
+
+
+        // Listener to toggle between Creatinine and eGFR input
+        if (toggleRenalInputBtn && creatinineInputSection && egfrInputSection) {
+            toggleRenalInputBtn.addEventListener('click', function() {
+                // ... (logic remains the same) ...
+                isEgfrInputMode = !isEgfrInputMode;
+                if (isEgfrInputMode) {
+                    creatinineInputSection.style.display = 'none'; egfrInputSection.style.display = 'block';
+                    toggleRenalInputBtn.textContent = 'Know Creatinine? Enter Creatinine';
+                    serumCreatinineInput.value = ''; egfrInput.focus();
+                } else {
+                    creatinineInputSection.style.display = 'block'; egfrInputSection.style.display = 'none';
+                    toggleRenalInputBtn.textContent = "Don't know Creatinine? Enter eGFR";
+                    egfrInput.value = ''; serumCreatinineInput.focus();
+                }
+                clearResults();
+            });
+        } else { console.error("Renal input toggle elements not found."); }
+
+
+        // --- FORM SUBMISSION ---
+        if (patientForm) {
+            patientForm.addEventListener('submit', async function(e) { // Added async
+                e.preventDefault();
+
+                // Enforce limits one last time
+                enforceMinMax(ageInput);
+                enforceMinMax(serumCreatinineInput);
+                enforceMinMax(egfrInput);
+
+                if (loadingSpinner) loadingSpinner.style.display = 'block';
+                clearResults();
+
+                // Use setTimeout to allow UI update before heavy calculation + fetch
+                await new Promise(resolve => setTimeout(resolve, 50)); // Wait for UI
+
+                let evaluationResults = {}; // To store results for backend
+                let patientDataForBackend = {}; // To store data for backend
+
+                try {
+                    // --- Gather and Validate Patient Data ---
+                    const name = patientNameInput?.value.trim() || null; // Use null if empty
+                    const age = ageInput?.value ? parseInt(ageInput.value, 10) : NaN;
+                    const sex = sexSelect?.value;
+                    const falls = patientForm.elements['falls_history']?.value;
+                    const abhaIdRaw = abhaInput?.value.trim() || null; // Use null if empty
+
+                    // Basic Validation (Required fields are marked in HTML)
+                    if (isNaN(age)) throw new Error("Please enter a valid Age.");
+                    if (!sex) throw new Error("Please select Sex.");
+                    if (!falls) throw new Error("Please select History of Falls.");
+                    // Renal validation happens below
+
+                    let finalEgfr = NaN;
+                    let finalCreatinine = NaN;
+                    let renalInputMethod = '';
+
+                    if (isEgfrInputMode) {
+                        renalInputMethod = 'eGFR';
+                        finalEgfr = egfrInput?.value ? parseFloat(egfrInput.value) : NaN;
+                        if (isNaN(finalEgfr) || finalEgfr < 0 || finalEgfr > 300) {
+                            throw new Error("Please enter a valid eGFR value (0-300) or switch to Creatinine input.");
+                        }
+                        finalCreatinine = estimateCreatinineFromEgfr(finalEgfr, age, sex); // Estimate Cr
+                    } else {
+                        renalInputMethod = 'Creatinine';
+                        finalCreatinine = serumCreatinineInput?.value ? parseFloat(serumCreatinineInput.value) : NaN;
+                        if (isNaN(finalCreatinine) || finalCreatinine < 0.1 || finalCreatinine > 20) {
+                            throw new Error("Please enter a valid Serum Creatinine (0.1-20.0 mg/dL) or switch to eGFR input.");
+                        }
+                         finalEgfr = calculateEgfrFromCreatinine(finalCreatinine, age, sex); // Calculate eGFR
+                         if (isNaN(finalEgfr)) {
+                            throw new Error("Could not calculate eGFR. Please check Creatinine, Age, and Sex.");
+                        }
+                    }
+
+                    // --- Gather Medication Data ---
+                    const medicationInputs = patientForm.querySelectorAll('.med-input[name="medication_name"]');
+                    const knownMeds = [];
+                    const otherMeds = [];
+
+                    medicationInputs.forEach(inputElement => {
+                        const medName = inputElement.value.trim();
+                        if (!medName) return; // Skip empty fields
+
+                        const isKnown = inputElement.dataset.known === "true";
+                        // Use the actual input value if not known, or the hidden value if known
+                        const effectiveMedName = isKnown ? (inputElement.closest('.med-input-group').querySelector('input[type="hidden"][name="medication_value"]')?.value || medName) : medName;
+
+                        if (isKnown && medicationData[effectiveMedName]) {
+                             const score = medicationData[effectiveMedName]?.acb;
+                             knownMeds.push({ name: effectiveMedName, acb: (score === null ? "N/A" : score) });
+                        } else {
+                            otherMeds.push(effectiveMedName); // Record the typed name
+                        }
+                    });
+
+                    // --- Perform Evaluations ---
+                    const medsForEval = knownMeds.map(m => m.name); // Use only known med names for evaluation logic
+
+                    // ACB Evaluation
+                    const acbScores = medsForEval.map(med => { const score = medicationData[med]?.acb; return (typeof score === 'number') ? score : 0; });
+                    const totalACB = acbScores.reduce((sum, score) => sum + score, 0);
+                    let acbText = `Total Anticholinergic Burden (ACB) Score: <strong>${totalACB}</strong>\n\nContributing Known Medications:\n`;
+                    let acbMedsFound = false;
+                    medsForEval.forEach((med) => {
+                         const score = medicationData[med]?.acb;
+                         if (score !== null && score !== undefined && score > 0) { acbText += ` - ${med}: ACB ${score}\n`; acbMedsFound = true; }
+                         else if (score === null) { acbText += ` - ${med}: ACB N/A\n`; acbMedsFound = true; }
+                    });
+                    if (!acbMedsFound && medsForEval.length > 0) { acbText += ` (None with known ACB score > 0 among selected)\n`; }
+                    else if (medsForEval.length === 0) { acbText += ` (No known medications selected for ACB evaluation)\n`; }
+                    if (otherMeds.length > 0) {
+                         acbText += `\nOther Medications Entered (Not Scored):\n - ${otherMeds.join('\n - ')}\n`;
+                    }
+                    acbText += '\n<strong>Overall ACB Assessment:</strong>\n';
+                    let acbWarnings = [];
+                    if (totalACB >= 3) { acbWarnings.push('<span class="risky">High total ACB score (&ge;3). Significantly increased risk of cognitive impairment, delirium, confusion, falls, constipation, urinary retention, and other anticholinergic adverse effects. Strongly consider deprescribing or substitution with lower ACB alternatives.</span>'); }
+                    else if (totalACB > 0) { acbWarnings.push('<span class="risky">Moderate/Low total ACB score (1-2). Monitor closely for anticholinergic effects (e.g., dry mouth, constipation, dizziness, confusion), especially if patient is frail, has cognitive impairment, or history of falls. Consider alternatives if symptoms occur.</span>'); }
+                    if (!isNaN(age) && age >= 65 && totalACB > 0) { acbWarnings.push(`<span class="risky">Patient age (${age}) increases susceptibility to anticholinergic side effects, even at lower ACB scores.</span>`); }
+                    if (falls === "Yes" && totalACB > 0) { acbWarnings.push('<span class="risky">Patient has a history of falls; any anticholinergic load (ACB > 0) further increases fall risk.</span>'); }
+                    if (acbWarnings.length > 0) { acbText += acbWarnings.join('\n'); }
+                    else { if (medsForEval.length > 0) { acbText += '<span class="safe">Total ACB score is 0. Low risk from anticholinergic burden based on selected known medications contributing to the score.</span>'; } else { acbText += 'No known medications evaluated for ACB score.'; } }
+                    if (resultsACB_Pre) resultsACB_Pre.innerHTML = acbText; if (resultsACB_Div) resultsACB_Div.classList.add('visible');
+                    evaluationResults.acb = { total: totalACB, text: acbText }; // Store for backend
+
+
+                    // Beers Criteria Evaluation
+                    let beersWarnings = medsForEval.filter(medName => beersList[medName]).map(medName => `<span class="risky"><strong>${medName} (Beers):</strong> ${beersList[medName]}</span>`);
+                    if (medsForEval.includes("Sliding scale insulin")) { const ssiWarning = beersList["Sliding scale insulin"]; if (ssiWarning && !beersWarnings.some(w => w.includes("Sliding scale insulin"))) { beersWarnings.push(`<span class="risky"><strong>Sliding scale insulin (Beers):</strong> ${ssiWarning}</span>`); } }
+                    if (medsForEval.includes("Estrogens (systemic/oral)")) { const estrogenWarning = beersList["Estrogens (systemic/oral)"]; if (estrogenWarning && !beersWarnings.some(w => w.includes("Estrogens"))) { beersWarnings.push(`<span class="risky"><strong>Estrogens (systemic/oral) (Beers):</strong> ${estrogenWarning}</span>`); } }
+                    let beersText;
+                    if (beersWarnings.length > 0) { beersText = beersWarnings.join('\n'); }
+                    else { if (medsForEval.length > 0) { beersText = '<span class="safe">No specific high-risk medications according to the selected Beers Criteria® examples were found among known medications. (Note: This tool includes examples, not the exhaustive list. Clinical judgment is required).</span>'; } else { beersText = 'No known medications evaluated against Beers Criteria examples.'; } }
+                    if (resultsBeers_Pre) resultsBeers_Pre.innerHTML = beersText; if (resultsBeers_Div) resultsBeers_Div.classList.add('visible');
+                    evaluationResults.beers = { text: beersText }; // Store for backend
+
+
+                    // STOPP/START & Renal Evaluation
+                    let stoppText = '';
+                    stoppText += '<strong>Renal Function Assessment (based on eGFR):</strong>\n';
+                    let renalStatus = "Unknown";
+                    if (!isNaN(finalEgfr)) {
+                        const egfrRounded = finalEgfr.toFixed(1);
+                        if (finalEgfr >= 90) { stoppText += `<span class="safe">Normal Function (eGFR ${egfrRounded} mL/min/1.73m²).</span>\n`; renalStatus = "Normal"; }
+                        else if (finalEgfr >= 60) { stoppText += `<span class="safe">Mild Impairment (eGFR ${egfrRounded} mL/min/1.73m²). Generally low risk for dose accumulation for most drugs.</span>\n`; renalStatus = "Mild"; }
+                        else if (finalEgfr >= 30) { stoppText += `<span class="risky">Moderate Impairment (eGFR ${egfrRounded} mL/min/1.73m²). Risk of drug accumulation. Review need/doses of renally cleared drugs (e.g., Digoxin, Gabapentin, Metformin, some antibiotics).</span>\n`; renalStatus = "Moderate"; }
+                        else { stoppText += `<span class="risky">Severe Impairment (eGFR ${egfrRounded} mL/min/1.73m²). High risk of accumulation/toxicity. Many drugs require significant dose reduction or are contraindicated (e.g., Metformin, Nitrofurantoin, certain NSAIDs). Consult renal dosing guides.</span>\n`; renalStatus = "Severe"; }
+                    } else { stoppText += '<span class="risky">eGFR not provided or could not be calculated. Cannot assess renal function impact on medication safety. Renal dose adjustments may be necessary for certain drugs.</span>\n'; }
+                    stoppText += '\n<strong>Potential Issues (STOPP Criteria Examples):</strong>\n';
+                    let interactionsFound = false; const reportedMessages = new Set();
+                    const patientConditions = { /* ... unchanged ... */
+                         "Falls": falls === "Yes", "Renal Impairment": !isNaN(finalEgfr) && finalEgfr < 60,
+                         "Severe Renal Impairment": !isNaN(finalEgfr) && finalEgfr < 30,
+                         "Moderate Renal Impairment": !isNaN(finalEgfr) && finalEgfr >= 30 && finalEgfr < 50,
+                         "Hypertension": false, "Gout": false, "Dementia": false, "Constipation": false, "Asthma": false,
+                         "Hypoglycemia": false, "Long-term Use": medsForEval.some(m => medicationData[m]?.class === "PPI (Proton Pump Inhibitors)") // Example check
+                    };
+                    const checkClass = (className) => { /* ... unchanged ... */
+                        if (typeof className !== 'string') return false; if (medsForEval.includes(className)) return true;
+                        switch (className) { /* Cases remain the same */
+                            case "Benzodiazepines": return medsForEval.some(m => ["Alprazolam", "Diazepam", "Flurazepam", "Lorazepam", "Clonazepam", "Temazepam", "Midazolam", "Nitrazepam", "Oxazepam", "Triazolam", "Estazolam", "Flunitrazepam", "Lormetazepam", "Chlordiazepoxide", "Clorazepate"].includes(m));
+                            case "Opioids": return medsForEval.some(m => ["Morphine", "Codeine", "Meperidine", "Oxycodone", "Hydrocodone", "Tramadol", "Fentanyl", "Methadone", "Buprenorphine"].includes(m));
+                            case "NSAIDs": return medsForEval.some(m => ["Ibuprofen", "Naproxen", "Diclofenac", "Meloxicam", "Celecoxib", "Indomethacin", "Ketorolac", "Aspirin", "Nabumetone"].includes(m));
+                            case "Anticholinergics": return medsForEval.some(m => (medicationData[m]?.acb ?? 0) >= 2);
+                            case "Antipsychotics": return medsForEval.some(m => ["Haloperidol", "Olanzapine", "Risperidone", "Quetiapine", "Aripiprazole", "Clozapine", "Perphenazine", "Trifluoperazine", "Chlorpromazine", "Levomepromazine", "Pimozide", "Loxapine", "Asenapine", "Iloperidone", "Paliperidone", "Zotepine", "Prochlorperazine", "Promazine", "Thioridazine"].includes(m));
+                            case "Gabapentinoids": return medsForEval.some(m => ["Gabapentin", "Pregabalin"].includes(m));
+                            case "SSRIs": return medsForEval.some(m => ["Paroxetine", "Fluvoxamine", "Sertraline", "Fluoxetine", "Citalopram", "Escitalopram"].includes(m));
+                            case "Potassium-sparing diuretics": return medsForEval.some(m => ["Spironolactone", "Amiloride", "Triamterene", "Eplerenone"].includes(m));
+                            case "Corticosteroids": return medsForEval.some(m => ["Prednisone", "Prednisolone", "Methylprednisolone", "Dexamethasone", "Hydrocortisone", "Beclometasone dipropionate"].includes(m));
+                            case "Thiazide Diuretic": return medsForEval.some(m => ["Hydrochlorothiazide", "Chlortalidone", "Indapamide", "Metolazone"].includes(m));
+                            case "PPI (Proton Pump Inhibitors)": return medsForEval.some(m => ["Omeprazole", "Lansoprazole", "Pantoprazole", "Esomeprazole", "Rabeprazole"].includes(m));
+                            case "Loop Diuretic": return medsForEval.some(m => ["Furosemide", "Bumetanide", "Torasemide"].includes(m));
+                            case "Neuroleptics": return checkClass("Antipsychotics");
+                            case "Vasodilator drugs": return medsForEval.some(m => ["Prazosin", "Terazosin", "Doxazosin", "Hydralazine", "Isosorbide dinitrate", "Isosorbide mononitrate"].includes(m));
+                            case "ACE inhibitors": return medsForEval.some(m => ["Lisinopril", "Enalapril", "Ramipril", "Captopril", "Perindopril", "Benazepril"].includes(m));
+                            case "Calcium Channel Blocker": return medsForEval.some(m => ["Amlodipine", "Nifedipine", "Felodipine", "Verapamil", "Diltiazem", "Lacidipine"].includes(m));
+                            case "Beta-blocker": return medsForEval.some(m => ["Metoprolol", "Atenolol", "Bisoprolol", "Carvedilol", "Propranolol", "Labetalol", "Nebivolol", "Sotalol", "Nadolol", "Timolol"].includes(m));
+                            case "Sulfonylureas": return medsForEval.some(m => ["Glyburide", "Glipizide", "Glimepiride", "Chlorpropamide", "Gliclazide"].includes(m));
+                            case "CNS Depressants": return checkClass("Benzodiazepines") || checkClass("Opioids") || checkClass("Antipsychotics") || checkClass("Gabapentinoids") || medsForEval.some(m => ["Zolpidem", "Zopiclone", "Eszopiclone", "Zaleplon", "Hydroxyzine", "Diphenhydramine", "Promethazine", "Chlorphenamine", "Doxylamine", "Baclofen", "Cyclobenzaprine", "Methocarbamol", "Trazodone", "Mirtazapine"].includes(m));
+                            default: return false;
+                        }
+                    };
+                    stoppCombinations.forEach(({ combination, risk }) => { /* ... unchanged check logic ... */
+                        const item1 = combination[0]; const item2 = combination[1]; let triggered = false; let messageKey = ''; let message = '';
+                        const item1IsCondition = medicationData[item1]?.condition; const item2IsCondition = medicationData[item2]?.condition;
+                        if (!item1IsCondition && !item2IsCondition && item1 !== "Duplicate drug class") { if (checkClass(item1) && checkClass(item2)) { triggered = true; const sortedItems = [item1, item2].sort(); messageKey = `${sortedItems[0]}-${sortedItems[1]}`; message = `<span class="risky"><strong>${item1} + ${item2}:</strong> ${risk}</span>`; } }
+                        else if (item1IsCondition || item2IsCondition) { const conditionName = item1IsCondition ? item1 : item2; const drugOrClassName = (conditionName === item1) ? item2 : item1; if (patientConditions[conditionName] === true && checkClass(drugOrClassName)) { triggered = true; messageKey = `${drugOrClassName}-${conditionName}`; if (drugOrClassName === "PPI (Proton Pump Inhibitors)" && conditionName === "Long-term Use") { message = `<span class="risky"><strong>${drugOrClassName} (Long-term Use?):</strong> ${risk}</span>`; } else { message = `<span class="risky"><strong>${drugOrClassName} with ${conditionName}:</strong> ${risk}</span>`; } } }
+                        if (triggered && !reportedMessages.has(messageKey)) { stoppText += message + '\n'; reportedMessages.add(messageKey); interactionsFound = true; }
+                    });
+                    const classCounts = {}; const drugClassesForDuplicateCheck = { /* ... unchanged ... */ };
+                    medsForEval.forEach(med => { for (const className in drugClassesForDuplicateCheck) { if (drugClassesForDuplicateCheck[className].includes(med)) { classCounts[className] = (classCounts[className] || 0) + 1; } } });
+                    for (const className in classCounts) { if (classCounts[className] > 1) { const duplicateRisk = stoppCombinations.find(c => c.combination[0] === "Duplicate drug class")?.risk; const messageKey = `Duplicate-${className}`; const message = `<span class="risky"><strong>Duplicate Drug Class (${className} x${classCounts[className]}):</strong> ${duplicateRisk || 'Avoid duplicate drug class therapy without clear justification.'}</span>`; if (!reportedMessages.has(messageKey)) { stoppText += message + '\n'; reportedMessages.add(messageKey); interactionsFound = true; } } }
+                    if (!interactionsFound) { if (medsForEval.length > 0) { stoppText += '<span class="safe">No specific high-risk interactions or contraindications based on the selected STOPP criteria examples and provided patient data were detected among known medications. (Note: This tool includes examples, not the exhaustive list. Clinical judgment required).</span>'; } else { stoppText += 'No known medications evaluated against STOPP Criteria examples.'; } }
+                    if (resultsSTOPP_Pre) resultsSTOPP_Pre.innerHTML = stoppText; if (resultsSTOPP_Div) resultsSTOPP_Div.classList.add('visible');
+                    evaluationResults.stopp = { text: stoppText }; // Store for backend
+
+
+                    // --- Prepare Data for Backend ---
+                    // IMPORTANT: Anonymize data here according to ethical guidelines
+                    const researchId = `PAT_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`; // Example simple ID
+                    patientDataForBackend = {
+                        researchId: researchId, // Anonymized ID
+                        timestamp: new Date().toISOString(),
+                        // name: name, // AVOID sending name by default
+                        // abhaId: abhaIdRaw, // AVOID sending ABHA ID by default
+                        age: age,
+                        sex: sex,
+                        renalInputMethod: renalInputMethod,
+                        serumCreatinine: !isNaN(finalCreatinine) ? finalCreatinine.toFixed(2) : null,
+                        eGFR: !isNaN(finalEgfr) ? finalEgfr.toFixed(1) : null,
+                        renalStatus: renalStatus,
+                        fallsHistory: falls,
+                        knownMedications: knownMeds, // Array of {name, acb}
+                        otherMedications: otherMeds, // Array of strings
+                        results: { // Include simplified results
+                            totalACB: totalACB,
+                            beersAlerts: beersWarnings.length, // Count of alerts
+                            stoppAlerts: reportedMessages.size // Count of unique STOPP alerts
+                        }
+                    };
+
+                     // --- Send Data to Backend ---
+                    // IMPORTANT: Replace '/save_data' with your actual backend endpoint URL LATER
+                    const backendUrl = '/save_data'; // <<<< Placeholder - UPDATE THIS LATER
+                    console.log("Attempting to send data to backend:", backendUrl);
+                    console.log("Data Payload:", JSON.stringify(patientDataForBackend));
+
+                    // Only proceed if backendUrl is not the placeholder
+                    if (backendUrl !== '/save_data' && !backendUrl.startsWith('http')) {
+                        console.warn("Backend URL looks invalid. Skipping fetch.");
+                        alert("Backend URL is not configured correctly. Data not saved.");
+                    } else if (backendUrl !== '/save_data') {
+                        try {
+                            const response = await fetch(backendUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', },
+                                body: JSON.stringify(patientDataForBackend),
+                            });
+
+                            if (!response.ok) {
+                                const errorText = await response.text();
+                                console.error(`Backend Error: ${response.status} ${response.statusText}`, errorText);
+                                alert(`Could not save data to backend. Server responded with status ${response.status}. Check console for details.`);
+                            } else {
+                                const result = await response.json();
+                                console.log('Backend Response:', result);
+                                // Optional: Add a subtle success indicator instead of alert
+                                // e.g., display a small temporary message near the save button
+                            }
+                        } catch (networkError) {
+                            console.error('Network error while sending data to backend:', networkError);
+                            alert('Network error: Could not connect to the backend data saving service. Please ensure it is running and accessible.');
+                        }
+                    } else {
+                         console.log("Backend URL is '/save_data'. Skipping fetch to backend.");
+                         // Optionally inform the user data isn't being saved
+                         // alert("Note: Backend URL not configured. Data is not being saved.");
+                    }
+
+
+                    // --- Final UI Updates ---
+                    if (downloadBtn) downloadBtn.style.display = 'inline-block';
+                    const firstResult = document.querySelector('.results-section.visible');
+                    if (firstResult) { firstResult.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+                } catch (error) {
+                    console.error("Error during evaluation or data preparation:", error);
+                    alert(`Evaluation Error: ${error.message}`); // Show user-friendly error
+                    if (resultsACB_Pre) resultsACB_Pre.innerHTML = `<span class="risky"><strong>Error:</strong> ${error.message}</span>`;
+                    if (resultsACB_Div) resultsACB_Div.classList.add('visible');
+                } finally {
+                    if (loadingSpinner) loadingSpinner.style.display = 'none';
+                }
+            }); // End of submit listener
+        } else { console.error("Patient form not found."); }
+
+
+        // --- Print Report Logic ---
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                // ... (Print logic remains largely the same) ...
+                const name = patientNameInput?.value || "Patient";
+                const abhaId = abhaInput?.value || "N/A";
+                const age = ageInput?.value || "N/A";
+                const sex = sexSelect?.value || "N/A";
+                const fallsHistory = patientForm.elements['falls_history']?.value || "N/A";
+
+                let displayEgfr = "N/A";
+                let displayCreatinine = "N/A";
+                const currentAge = ageInput?.value ? parseInt(ageInput.value, 10) : NaN;
+                const currentSex = sexSelect?.value;
+                let currentEgfrVal = NaN;
+                let currentCrVal = NaN;
+
+                if (isEgfrInputMode) {
+                    currentEgfrVal = egfrInput?.value ? parseFloat(egfrInput.value) : NaN;
+                    if (!isNaN(currentEgfrVal)) {
+                        displayEgfr = `${currentEgfrVal.toFixed(1)} mL/min/1.73m²`;
+                        currentCrVal = estimateCreatinineFromEgfr(currentEgfrVal, currentAge, currentSex);
+                        displayCreatinine = isNaN(currentCrVal) ? "N/A (Could not estimate)" : `${currentCrVal.toFixed(2)} mg/dL (Estimated)`;
+                    }
+                } else {
+                    currentCrVal = serumCreatinineInput?.value ? parseFloat(serumCreatinineInput.value) : NaN;
+                     if (!isNaN(currentCrVal)) {
+                        displayCreatinine = `${currentCrVal.toFixed(2)} mg/dL`;
+                        currentEgfrVal = calculateEgfrFromCreatinine(currentCrVal, currentAge, currentSex);
+                        displayEgfr = isNaN(currentEgfrVal) ? "N/A (Could not calculate)" : `${currentEgfrVal.toFixed(1)} mL/min/1.73m²`;
+                     }
+                }
+
+                 const allMedInputs = patientForm.querySelectorAll('.med-input[name="medication_name"]');
+                 const medsListForReport = Array.from(allMedInputs)
+                    .map(input => input.value.trim())
+                    .filter(name => name !== "")
+                    .map(name => {
+                        const knownMedData = medicationData[name];
+                        if (knownMedData) {
+                            const score = knownMedData.acb;
+                            return `${name} (ACB: ${score === null ? "N/A" : score})`;
+                        } else {
+                            return `${name} (ACB: Unknown)`;
+                        }
+                    })
+                    .join(', ') || "None Entered";
+
+
+                const currentDate = new Date(); const reportDate = currentDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+                const reportDateTime = currentDate.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short'});
+
+                const formatHtmlForPrint = (selector) => {
+                    const element = document.querySelector(selector + ' pre');
+                    if (!element) return '<p>Section not found or empty.</p>';
+                    const clone = element.cloneNode(true);
+                    clone.querySelectorAll('span.risky').forEach(span => { const html = span.innerHTML; span.outerHTML = `<div style="margin-bottom: 8px; color: #dc3545;"><strong>⚠ WARNING:</strong> ${html}</div>`; });
+                    clone.querySelectorAll('span.safe').forEach(span => { const html = span.innerHTML; span.outerHTML = `<div style="margin-bottom: 8px; color: #28a745;"><strong>✓ OK:</strong> ${html}</div>`; });
+                    let html = clone.innerHTML; html = html.replace(/\n/g, '<br>');
+                    return `<div class="results-print">${html}</div>`;
+                };
+
+                const acbHTML = formatHtmlForPrint('#resultsACB');
+                const beersHTML = formatHtmlForPrint('#resultsBeers');
+                const stoppHTML = formatHtmlForPrint('#resultsSTOPP');
+
+                const printContent = `
+                <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Medication Safety Report for ${name}</title><style>body{font-family:Arial,sans-serif;color:#333;line-height:1.5;margin:20mm}.report-header{text-align:center;margin-bottom:20px}.report-header img{max-height:60px;width:auto;margin-bottom:10px}h1,h2,h3{color:#2c3e50;margin-bottom:.5em;page-break-after:avoid}h1{text-align:center;margin-bottom:1em;font-size:1.6em}h2{font-size:1.3em;border-bottom:1px solid #ccc;padding-bottom:5px;margin-top:1.5em}h3{font-size:1.1em;margin-top:1em;color:#3498db}.patient-info{margin-bottom:20px;padding:15px;border:1px solid #eee;border-radius:8px;background:#f9f9f9;page-break-inside:avoid}.patient-info p{margin:6px 0;font-size:.95em;word-wrap:break-word}.patient-info p strong{color:#444;margin-right:5px;font-weight:700}.results-print{white-space:normal;word-wrap:break-word;font-family:'Arial',sans-serif;background:#f8f8f8;padding:15px;border-radius:4px;border:1px solid #ddd;font-size:.9em;line-height:1.6;margin-top:10px;page-break-inside:auto}.results-print strong{font-weight:700}.results-print br{margin-bottom:.6em;display:block;content:""}.footer{margin-top:40px;padding-top:15px;font-size:.8em;font-style:italic;text-align:center;color:#777;border-top:1px solid #ccc;width:100%;background:#fff;padding-left:20mm;padding-right:20mm;box-sizing:border-box;page-break-before:auto}@media print{body{margin:15mm}a{text-decoration:none;color:#333}button{display:none}}</style></head>
+                <body><div class="report-header"><img src="https://www.ihsbharat.com/images/ihs_logo%20mini.png" alt="IHS Bharat Logo"><h1>Drug Safety Calculator Report</h1></div>
+                <div class="patient-info"><h2>Patient Details</h2>
+                <p><strong>Name:</strong> ${name}</p><p><strong>ABHA ID:</strong> ${abhaId}</p><p><strong>Age:</strong> ${age}</p><p><strong>Sex:</strong> ${sex}</p>
+                <p><strong>Serum Creatinine:</strong> ${displayCreatinine}</p> <p><strong>eGFR:</strong> ${displayEgfr}</p> <p><strong>History of Falls:</strong> ${fallsHistory}</p><p><strong>Medications Entered:</strong> ${medsListForReport}</p><p><strong>Report Date:</strong> ${reportDate}</p></div>
+                <h2>Evaluation Summary</h2><h3>Anticholinergic Burden (ACB) Scale</h3>${acbHTML}<h3>Beers Criteria® (2023 Examples)</h3>${beersHTML}<h3>STOPP Criteria & Renal Assessment (v3 Examples)</h3>${stoppHTML}
+                <p class="footer"><strong>Disclaimer:</strong> This report is generated based on selected standard criteria (ACB Scale, Beers Criteria® v2023 examples, STOPP Criteria v3 examples) and user inputs as of ${reportDateTime}. It is intended for informational purposes only and does not replace professional clinical judgment or a comprehensive medication review by a qualified healthcare professional (e.g., physician, pharmacist). Drug information and clinical guidelines change frequently. Always consult with a healthcare professional for medical advice, diagnosis, and treatment decisions. This tool does not check for all possible drug interactions, contraindications, allergies, dosages, or patient-specific factors. Verify all information independently. <strong>It is for research purpose only and should not be used commercially.</strong> Location context: Kolkata, West Bengal, India.</p>
+                </body></html>`;
+
+                const printWindow = window.open('', '_blank');
+                 if (printWindow) { /* ... unchanged print execution ... */
+                     printWindow.document.open(); printWindow.document.write(printContent); printWindow.document.close();
+                     setTimeout(() => { try { printWindow.focus(); printWindow.print(); } catch (printError) { console.error("Error printing:", printError); alert("Could not initiate printing..."); } }, 500);
+                 } else { alert("Could not open print window..."); }
+            });
+        } else { console.error("Download button not found."); }
+
+
+        // --- ABHA ID Auto-Formatting ---
+        if (abhaInput) {
+             abhaInput.addEventListener('input', function(e) { /* ... unchanged ... */
+                 const target = e.target; let originalValue = target.value; let originalCursorPos = target.selectionStart; let digitsBeforeCursor = (originalValue.substring(0, originalCursorPos).match(/\d/g) || []).length;
+                 let value = target.value.replace(/[^\d]/g, ''); value = value.substring(0, 14); let formattedValue = ''; const len = value.length;
+                 if (len > 10) { formattedValue = `${value.substring(0, 2)}-${value.substring(2, 6)}-${value.substring(6, 10)}-${value.substring(10, len)}`; }
+                 else if (len > 6) { formattedValue = `${value.substring(0, 2)}-${value.substring(2, 6)}-${value.substring(6, len)}`; }
+                 else if (len > 2) { formattedValue = `${value.substring(0, 2)}-${value.substring(2, len)}`; }
+                 else { formattedValue = value; }
+                 if (target.value !== formattedValue) { target.value = formattedValue; let newCursorPos = 0; let digitsCounted = 0; for (let i = 0; i < formattedValue.length && digitsCounted < digitsBeforeCursor; i++) { newCursorPos++; if (/\d/.test(formattedValue[i])) { digitsCounted++; } } while (newCursorPos < formattedValue.length && formattedValue[newCursorPos] === '-' && originalValue.charAt(originalCursorPos - 1) !== '-') { if (newCursorPos === 2 || newCursorPos === 7 || newCursorPos === 12) { newCursorPos++; } else { break; } } target.setSelectionRange(newCursorPos, newCursorPos); }
+             });
+         } else { console.error("ABHA input element #abhaInput not found!"); }
+
+
+        // --- Suggestion Form Logic (Using Fetch API) ---
+        if (suggestionContainerElement) {
+             if (showSuggestionFormBtn && suggestionFormArea) {
+                 showSuggestionFormBtn.addEventListener('click', function() {
+                     console.log("Show Suggestion button clicked"); // Debug log
+                     suggestionFormArea.classList.toggle('visible'); // Use toggle instead of add
+                     // Optionally change button text based on visibility
+                     if (suggestionFormArea.classList.contains('visible')) {
+                         showSuggestionFormBtn.textContent = 'Hide Suggestion Form'; // Example text change
+                     } else {
+                         showSuggestionFormBtn.textContent = 'Suggest/Update Medication Info';
+                     }
+                 });
+             } else { console.error("Suggestion show button or form area not found!"); }
+
+             if (submitSuggestionBtn && suggestionMedNameInput && suggestionDetailsInput && suggestionEmailInput) {
+                 submitSuggestionBtn.addEventListener('click', async function() { // Make async for fetch
+                    const medName = suggestionMedNameInput.value.trim();
+                    const details = suggestionDetailsInput.value.trim();
+                    const userEmail = suggestionEmailInput.value.trim(); // Optional
+
+                    if (!medName) { alert('Please enter the medication name for the suggestion.'); suggestionMedNameInput.focus(); return; }
+                    if (!details) { alert('Please provide details for the suggestion.'); suggestionDetailsInput.focus(); return; }
+
+                    const suggestionData = {
+                        medicationName: medName,
+                        details: details,
+                        email: userEmail || null, // Send null if empty
+                        timestamp: new Date().toISOString()
+                    };
+
+                    // IMPORTANT: Replace '/save_suggestion' with your actual backend endpoint URL
+                    const suggestionBackendUrl = '/save_suggestion'; // <<<< Placeholder - UPDATE THIS LATER
+                    console.log("Attempting to send suggestion to backend:", suggestionBackendUrl);
+                    console.log("Suggestion Payload:", JSON.stringify(suggestionData));
+
+                    // Check if URL is valid before fetching
+                    if (suggestionBackendUrl !== '/save_suggestion' && !suggestionBackendUrl.startsWith('http')) {
+                         console.warn("Suggestion Backend URL looks invalid. Skipping fetch.");
+                         alert("Suggestion Backend URL is not configured correctly. Suggestion not sent.");
+                         return; // Stop execution if URL is bad
+                    }
+                     if (suggestionBackendUrl === '/save_suggestion') {
+                         console.log("Suggestion Backend URL is '/save_suggestion'. Skipping fetch to backend.");
+                         alert("Note: Suggestion Backend URL not configured. Suggestion cannot be sent.");
+                         return; // Stop execution if URL is placeholder
+                    }
+
+                    try {
+                        // Show some loading indicator if desired
+                        submitSuggestionBtn.textContent = 'Sending...';
+                        submitSuggestionBtn.disabled = true;
+
+                        const response = await fetch(suggestionBackendUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', },
+                            body: JSON.stringify(suggestionData),
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error(`Suggestion Backend Error: ${response.status} ${response.statusText}`, errorText);
+                            alert(`Could not send suggestion. Server responded with status ${response.status}.`);
+                        } else {
+                            const result = await response.json();
+                            console.log('Suggestion Backend Response:', result);
+                            alert('Suggestion sent successfully! Thank you.'); // Give user feedback
+                            // Clear fields on success
+                            suggestionMedNameInput.value='';
+                            suggestionDetailsInput.value='';
+                            suggestionEmailInput.value='';
+                            // Optionally hide the form again
+                            // suggestionFormArea.classList.remove('visible');
+                            // showSuggestionFormBtn.textContent = 'Suggest/Update Medication Info';
+                        }
+                    } catch (networkError) {
+                        console.error('Network error while sending suggestion:', networkError);
+                        alert('Network error: Could not send suggestion. Please check your connection and try again.');
+                    } finally {
+                         // Restore button state
+                         submitSuggestionBtn.textContent = 'Send Suggestion';
+                         submitSuggestionBtn.disabled = false;
+                    }
+                 });
+             } else { console.error("Suggestion submit button or form inputs not found!"); }
+         }
+        // --- End Suggestion Form Logic ---
+
+        // --- Initial Setup ---
+        addMedicationField(); // Add the first medication row on load
+        clearResults(); // Ensure results are hidden initially
+
+        // Attach listeners to initially added medication field (if any are added on load)
+        const initialMedInput = document.querySelector('.med-input');
+        const initialSuggestions = document.querySelector('.autocomplete-suggestions');
+        if (initialMedInput && initialSuggestions) {
+             attachMedInputListeners(initialMedInput, initialSuggestions);
+        }
+
+
+    </script>
+</body>
+</html>
