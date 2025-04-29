@@ -948,7 +948,7 @@
                             alert('Network error: Could not connect to the backend data saving service. Please ensure it is running and accessible.');
                         }
                     } else {
-                         console.log("Backend URL is '/save_data'. Skipping fetch to backend.");
+                         console.log("Backend URL is 'https://ayushguptaihs.pythonanywhere.com/'. Skipping fetch to backend.");
                          // Optionally inform the user data isn't being saved
                          // alert("Note: Backend URL not configured. Data is not being saved.");
                     }
@@ -1102,18 +1102,18 @@
                     };
 
                     // IMPORTANT: Replace '/save_suggestion' with your actual backend endpoint URL
-                    const suggestionBackendUrl = '/save_suggestion'; // <<<< Placeholder - UPDATE THIS LATER
+                    const suggestionBackendUrl = 'https://ayushguptaihs.pythonanywhere.com/'; // <<<< Placeholder - UPDATE THIS LATER
                     console.log("Attempting to send suggestion to backend:", suggestionBackendUrl);
                     console.log("Suggestion Payload:", JSON.stringify(suggestionData));
 
                     // Check if URL is valid before fetching
-                    if (suggestionBackendUrl !== '/save_suggestion' && !suggestionBackendUrl.startsWith('http')) {
+                    if (suggestionBackendUrl !== 'https://ayushguptaihs.pythonanywhere.com/' && !suggestionBackendUrl.startsWith('http')) {
                          console.warn("Suggestion Backend URL looks invalid. Skipping fetch.");
                          alert("Suggestion Backend URL is not configured correctly. Suggestion not sent.");
                          return; // Stop execution if URL is bad
                     }
-                     if (suggestionBackendUrl === '/save_suggestion') {
-                         console.log("Suggestion Backend URL is '/save_suggestion'. Skipping fetch to backend.");
+                     if (suggestionBackendUrl === 'https://ayushguptaihs.pythonanywhere.com/') {
+                         console.log("Suggestion Backend URL is 'https://ayushguptaihs.pythonanywhere.com/'. Skipping fetch to backend.");
                          alert("Note: Suggestion Backend URL not configured. Suggestion cannot be sent.");
                          return; // Stop execution if URL is placeholder
                     }
